@@ -6,4 +6,5 @@
 - Changed from top 200 songs to top 20 songs
 - Normalized genre: artist_genre will only contain from the following: `[pop, trap, reggaeton, rock, latin, hip hop, rap, r&b,  other]`
 <br>
-### Total number of data: 34560  
+
+Total number of data: 34560  
