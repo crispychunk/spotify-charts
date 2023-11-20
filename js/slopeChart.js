@@ -1,12 +1,13 @@
 class SlopeChart {
 
     /*
-     * Class constructor with initial configuration
+     * Class constructor with initial configuration.
+     * Slope chart should only take 2 countries AND cannot take itself twice.
      */
     constructor(_config, _data) {
         this.config = {
             parentElement: _config.parentElement,
-            containerWidth: 1000,
+            containerWidth: 1050,
             containerHeight: 700,
             margin: {
                 top: 30,
@@ -17,7 +18,7 @@ class SlopeChart {
         }
 
         this.data = _data
-        this.selectedCountry = [_config.defaultCountry, 'Japan'];
+        this.selectedCountry = [_config.defaultCountry];
         this.selectedDate = _config.defaultDate;
         this.allGenre = ['pop', 'reggaeton', 'rock', 'latin', 'hip hop', 'rap', 'r&b', 'other']
         this.initVis();
