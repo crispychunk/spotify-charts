@@ -21,7 +21,17 @@ class LineChart {
 
   initVis() {
     let vis = this;
+    vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
+    vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
     // TODO
+
+    vis.svg = d3.select(vis.config.parentElement)
+      .attr('width', vis.config.containerWidth)
+      .attr('height', vis.config.containerHeight);
+
+    vis.chart = vis.svg.append('g')
+        .attr('transform', `translate(${vis.config.margin.left},${vis.config.margin.top})`);
+    
   }
 
   updateVis() {
