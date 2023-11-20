@@ -1,6 +1,7 @@
 let lineChart;
 
-d3.csv('data/data.csv').then (data => {
+d3.csv('data/data.csv')
+.then ( data => {
     data.forEach(d => {
         d.weekNum = getWeekNumber(d.week);
         d.rank = +d.rank;
@@ -11,10 +12,14 @@ d3.csv('data/data.csv').then (data => {
 
     console.log(canada_data)
     console.log(canada_data_by_week)
-    lineChart = new LineChart({
-        parentElement: '#line-chart'
-    }, data);
+    lineChart = new LineChart({parentElement: '#line-chart'}, canada_data);
     lineChart.updateVis();
+
+    const defaultCountry = 'Canada';
+    const defaultDate = '2022-06-16';
+
+
+    const slopeChart = new SlopeChart({parentElement: '#slope-chart', defaultCountry: defaultCountry, defaultDate: defaultDate}, data);
 })
 
 function getWeekNumber(dateString) {
@@ -39,4 +44,3 @@ function getWeekNumber(dateString) {
    
     return weekNumber;
   }
-   
