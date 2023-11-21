@@ -1,0 +1,11 @@
+{
+  "name": "g17",
+  "version": "1.0.0",
+  "description": "Spotify Weekly Chart Visualization",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "3.1.0"
+  }
+}
