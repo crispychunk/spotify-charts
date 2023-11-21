@@ -6,13 +6,10 @@ d3.csv('data/data.csv')
         d.weekNum = getWeekNumber(d.week);
         d.rank = +d.rank;
     })
-    // filter data where country is 'Canada' and rank is between the numbers 1 and 10
-    canada_data = data.filter(d => d.country === 'Canada' && d.rank <= 5);
-    canada_data_by_week = d3.group(canada_data, d => d.weekNum);
 
-    console.log(canada_data)
-    console.log(canada_data_by_week)
-    lineChart = new LineChart({parentElement: '#line-chart'}, canada_data);
+    canada_top_5 = data.filter(d => d.country === 'Canada' && d.rank <= 5);
+
+    lineChart = new LineChart({parentElement: '#line-chart'}, canada_top_5);
     lineChart.updateVis();
 
     const defaultCountry = 'Canada';
@@ -22,6 +19,7 @@ d3.csv('data/data.csv')
     const slopeChart = new SlopeChart({parentElement: '#slope-chart', defaultCountry: defaultCountry, defaultDate: defaultDate}, data);
 })
 
+// helper function that returns the week number given a date string from 2022
 function getWeekNumber(dateString) {
     monthToDaysMap = {
         '01': 0,
@@ -37,10 +35,9 @@ function getWeekNumber(dateString) {
         '11': 304,
         '12': 334
     }
-    // get month and day from dateString
     let month = dateString.split('-')[1];
     let day = dateString.split('-')[2];
     let weekNumber = Math.ceil((monthToDaysMap[month] + parseInt(day)) / 7);
    
     return weekNumber;
-  }
+}
