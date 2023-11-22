@@ -45,6 +45,12 @@ class ChoroplethMap {
     vis.colorScale = d3
       .scaleOrdinal()
       .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf"]);
+
+    // Legend
+    vis.legend = vis.svg
+      .append("g")
+      .attr("class", "legend")
+      .attr("transform", `translate(${vis.config.margin.left},${vis.height - 180})`);
   }
 
   updateVis() {
@@ -67,7 +73,7 @@ class ChoroplethMap {
     // Modify USA country to fit with dataset
     let USObject = vis.data.features.find((d) => d.properties.ADMIN == "United States of America");
     USObject.properties.ADMIN = "United States";
-    // Find number of genres
+
     // Now combine dataset
     vis.data.features.forEach((d) => {
       for (var [mapKey, mapValue] of vis.filteredSong) {
@@ -113,6 +119,24 @@ class ChoroplethMap {
         return "#808080";
       });
 
+    vis.legendItems = vis.legend
+      .selectAll("g")
+      .data(vis.colorScale.domain())
+      .join("g")
+      .attr("transform", (d, i) => `translate(0, ${i * 20})`);
+
+    vis.legendItems
+      .append("rect")
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", (d) => vis.colorScale(d));
+
+    vis.legendItems
+      .append("text")
+      .attr("x", 24) // Adjust the position as needed
+      .attr("y", 9) // Adjust the position as needed
+      .attr("dy", "0.35em")
+      .text((d) => d);
     // Additional code for rendering other visual elements on the map can be added here
   }
 }
