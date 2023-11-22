@@ -1,5 +1,6 @@
 let choroplethMap;
 let lineChart;
+let features = ["Acousticness", "Danceability", "Instrumentalness", "Liveness", "Energy", "Valence", "Speechiness"];
 
 // Define paths to your CSV and JSON files
 const csvPath = "data/data.csv";
@@ -13,7 +14,20 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
     d.weekNum = getWeekNumber(d.week);
     d.rank = +d.rank;
   })
-
+  
+   // Assuming you want to use certain columns for radar chart features
+    loadedData = data.slice(0, 5).map(d => ({
+        Acousticness: +d.acousticness,
+        Danceability: +d.danceability,
+        Instrumentalness: +d.instrumentalness,
+        Liveness: +d.liveness,
+        Energy: +d.energy,
+        Valence: +d.valence,
+        Speechiness: +d.speechiness,
+        Genre: d.artist_genre
+    }));
+  
+  
   canada_top_5 = csvData.filter(d => d.country === 'Canada' && d.rank <= 5);
 
   // BUILD CHARTS HERE
@@ -41,6 +55,9 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
   );
   choroplethMap.updateVis();
   // You can use jsonData in your charts as needed
+  
+  const radarchart = new radarChart({ parentElement: "#vis" }, loadedData);
+  radarchart.updateVis();
 });
 
 
