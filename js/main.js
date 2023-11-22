@@ -16,7 +16,7 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
   })
   
    // Assuming you want to use certain columns for radar chart features
-    loadedData = data.slice(0, 5).map(d => ({
+    loadedData = csvData.slice(0, 5).map(d => ({
         Acousticness: +d.acousticness,
         Danceability: +d.danceability,
         Instrumentalness: +d.instrumentalness,
