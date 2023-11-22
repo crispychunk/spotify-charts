@@ -14,7 +14,11 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
   const defaultDate = "2022-06-16";
 
   const slopeChart = new SlopeChart(
-    { parentElement: "#slope-chart", defaultCountry: defaultCountry, defaultDate: defaultDate },
+    {
+      parentElement: '#slope-chart',
+      defaultCountry: defaultCountry,
+      defaultDate: defaultDate
+  },
     csvData
   );
 
@@ -26,3 +30,4 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
   choroplethMap.renderVis();
   // You can use jsonData in your charts as needed
 });
+
