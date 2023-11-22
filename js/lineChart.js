@@ -16,10 +16,10 @@ class LineChart {
       },
     };
     this.data = _data;
-    this.initVis();
     // TODO temp data
-    this.selected_top_songs = _config.songs;
     this.week_1_top_songs = _data.filter(d => d.weekNum === 1).map(d => d.track_name);
+    
+    this.initVis();
   }
 
   initVis() {
@@ -37,7 +37,8 @@ class LineChart {
     
     vis.xScale = d3.scaleLinear().range([0, vis.width]);
     vis.yScale = d3.scaleLinear().range([0, vis.height]);
-    vis.colourScale = d3.scaleOrdinal(d3.schemeTableau10);
+    vis.colourScale = d3.scaleOrdinal(["#e41a1c","#0000FF","#ff7f00","#ffff33","#f781bf"]);
+
 
     vis.xAxis = d3.axisBottom(vis.xScale)
         .ticks(25)
@@ -52,12 +53,36 @@ class LineChart {
     
     vis.yAxisG = vis.chart.append('g')
         .attr('class', 'axis y-axis')
+
+    const legend = vis.svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(${vis.width - 50},${vis.config.margin.top})`);
+
+    console.log(vis.week_1_top_songs)
+
+    const legendItems = legend.selectAll(".legend-item")
+        .data(vis.week_1_top_songs)
+        .enter().append("g")
+        .attr("class", "legend-item")
+        .attr("transform", (d, i) => `translate(0,${i * 25})`);
+
+    legendItems.append("circle")
+        .attr("r", 6)
+        .attr("fill", d => vis.colourScale(d))
+
+
+    legendItems.append("text")
+        .attr("x", 20)
+        .attr("y", 12)
+        .attr("font-size", 12)
+        .text(d => d);
+
+    vis.updateVis();
   }
 
   updateVis() {
     let vis = this;
     // TODO
-    // get the max weekNum
     vis.xScale.domain([1, 25]);
     vis.yScale.domain([1, 5]);
     vis.colourScale.domain(vis.week_1_top_songs);
@@ -68,38 +93,11 @@ class LineChart {
   renderVis() {
     let vis = this;
     // TODO
-    // let week_1_top_songs = vis.data.filter(d => d.weekNum === 1).map(d => d.track_name);
-
-    let filterByWeek1Songs = vis.data.filter(d => vis.week_1_top_songs.includes(d.track_name));
-    console.log(filterByWeek1Songs);
-
-    let groupedBySong = d3.group(filterByWeek1Songs, d => d.track_name);
-    console.log(groupedBySong);
-
-
-    
     // filter data for selected songs
     let selected_songs = vis.data.filter(d => vis.week_1_top_songs.includes(d.track_name));
 
-    // TODO TEMP
-    d3.select("svg")
-        .selectAll(".line")
-        .append("g")
-        .attr("class", "line")
-        .data(groupedBySong)
-        .enter()
-        .append("path")
-        .attr("d", function (d) {
-            return d3.line()
-                .x(d => xScale(d.weekNum))
-                .y(d => yScale(d.rank)).curve(d3.curveCardinal)
-                (d.values)
-        })
-        .attr("fill", "none")
-        // .attr("stroke", d => color(d.key))
-        .attr("stroke-width", 2)
+    let groupedByTrack = d3.group(selected_songs, d => d.track_name);
 
-    //append circle 
     vis.chart.selectAll("circle")
         .append("g")
         .data(selected_songs)
@@ -109,6 +107,27 @@ class LineChart {
         .attr("cx", d => vis.xScale(d.weekNum))
         .attr("cy", d => vis.yScale(d.rank))
         .style("fill", d => vis.colourScale(d.track_name))
+        .style("stroke", "black")
+    
+    let line = d3.line()
+        .x(d => vis.xScale(d.weekNum))
+        .y(d => vis.yScale(d.rank));
+    
+    groupedByTrack.forEach((group, track_name) => {
+        group.forEach((d, i) => {            
+            let next_week_track = group.find(track => track.weekNum == d.weekNum + 1);
+            // draw line from (d.weekNum, d.rank) to (d.weekNum + 1, next_week_track.rank)
+            if (next_week_track) {
+                vis.chart.append("path")
+                    .datum([d, next_week_track])
+                    .attr("class", "line")
+                    .attr("d", line)
+                    .style("stroke", vis.colourScale(track_name))
+                    .style("fill", "none")
+                    .style("stroke-width", 2);
+            }
+        });
+    });
 
     vis.xAxisG.call(vis.xAxis);
     vis.yAxisG.call(vis.yAxis);
