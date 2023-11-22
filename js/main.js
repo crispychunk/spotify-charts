@@ -15,7 +15,7 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
 
   const slopeChart = new SlopeChart(
     { parentElement: "#slope-chart", defaultCountry: defaultCountry, defaultDate: defaultDate },
-    data
+    csvData
   );
 
   choroplethMap = new ChoroplethMap(
@@ -23,5 +23,6 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
     jsonData,
     csvData
   );
+  choroplethMap.renderVis();
   // You can use jsonData in your charts as needed
 });
