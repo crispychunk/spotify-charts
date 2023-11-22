@@ -6,13 +6,13 @@ class LineChart {
   constructor(_config, _data) {
     this.config = {
       parentElement: _config.parentElement,
-      containerWidth: 1000,
-      containerHeight: 300,
+      containerWidth: 1100,
+      containerHeight: 400,
       margin: {
-        top: 30,
-        right: 30,
-        bottom: 30,
-        left: 30,
+        top: 40,
+        right: 50,
+        bottom: 130,
+        left: 50,
       },
     };
     this.data = _data;
@@ -36,8 +36,8 @@ class LineChart {
         .attr('transform', `translate(${vis.config.margin.left},${vis.config.margin.top})`);
     
     vis.xScale = d3.scaleLinear().range([0, vis.width]);
-    vis.yScale = d3.scaleLinear().range([0, vis.height]);
-    vis.colourScale = d3.scaleOrdinal(["#e41a1c","#0000FF","#ff7f00","#ffff33","#f781bf"]);
+    vis.yScale = d3.scaleLinear().range([0, vis.height]);    
+    vis.colourScale = d3.scaleOrdinal(["#e41a1c","#0000FF","#ffaa00","#33ffff","#f781bf"]);
 
 
     vis.xAxis = d3.axisBottom(vis.xScale)
@@ -54,22 +54,36 @@ class LineChart {
     vis.yAxisG = vis.chart.append('g')
         .attr('class', 'axis y-axis')
 
+    // Add x-axis label
+    vis.chart.append("text")
+      .attr("class", "axis-title")
+      .attr("text-anchor", "middle")
+      .attr("x", vis.width + 30)
+      .attr("y", vis.height + 30)
+      .text("Week");
+
+    // Add y-axis label
+    vis.svg.append("text")
+      .attr("class", "axis-title")
+      .attr("x", 20)
+      .attr("y", 20)
+      .text("Rank");
+
+
+    // legend
     const legend = vis.svg.append("g")
         .attr("class", "legend")
-        .attr("transform", `translate(${vis.width - 50},${vis.config.margin.top})`);
-
-    console.log(vis.week_1_top_songs)
+        .attr("transform", `translate(${50},${vis.height + 100})`);
 
     const legendItems = legend.selectAll(".legend-item")
         .data(vis.week_1_top_songs)
         .enter().append("g")
         .attr("class", "legend-item")
-        .attr("transform", (d, i) => `translate(0,${i * 25})`);
+        .attr("transform", (d, i) => `translate(${i * 200},0)`);
 
     legendItems.append("circle")
         .attr("r", 6)
         .attr("fill", d => vis.colourScale(d))
-
 
     legendItems.append("text")
         .attr("x", 20)
@@ -124,7 +138,7 @@ class LineChart {
                     .attr("d", line)
                     .style("stroke", vis.colourScale(track_name))
                     .style("fill", "none")
-                    .style("stroke-width", 2);
+                    .style("stroke-width", 3);
             }
         });
     });
