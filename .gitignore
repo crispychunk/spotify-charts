@@ -1,3 +1,5 @@
 **/filtered_spotify.csv
 
 .idea
+
+node_modules/*

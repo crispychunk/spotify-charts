@@ -110,7 +110,7 @@ class SlopeChart {
         vis.xScale.domain([0, 1]);
         vis.yScale.domain([1, 20]);
         vis.colorScale.domain(vis.allGenre);
-        vis.rankScale.domain([0,19]);
+        vis.rankScale.domain([0, 19]);
 
 
         vis.renderVis();
@@ -124,7 +124,6 @@ class SlopeChart {
         const line = d3.line()
             .x((d, i) => vis.xScale(i))
             .y(vis.yScale);
-
 
 
         vis.chart.append("g")
@@ -163,7 +162,7 @@ class SlopeChart {
             .append("text")
             .attr("class", "song-text")
             .attr("text-anchor", "start")
-            .attr("x",  vis.xScale(1))
+            .attr("x", vis.xScale(1))
             .attr("y", d => vis.yScale(d['country2']))
             .text(d => d['country2'] + ' ' + d['track_name']);
 

@@ -9,18 +9,20 @@
   <body>
     <!-- Add HTML content, SVG drawing area, ... -->
     <div>
-      <div id="choropleth-Map"></div>
+      <div id="choropleth-map"></div>
       <svg id="slope-chart"></svg>
-    </div>
-    <div>
-      <svg id="line-chart"></svg>
+      <div>
+        <svg id="line-chart"></svg>
+      </div>
     </div>
     <!-- D3 bundle -->
     <script src="js/d3.v6.min.js"></script>
-
+    <!-- Other dependencies -->
+    <script src="js/topojson.v3.js"></script>
     <!-- Our JS code -->
     <script src="js/main.js"></script>
     <script src="js/slopeChart.js"></script>
+    <script src="js/choroplethMap.js"></script>
     <script src="js/lineChart.js"></script>
   </body>
 </html>

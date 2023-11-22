@@ -1,23 +1,48 @@
+let choroplethMap;
 let lineChart;
 
-d3.csv('data/data.csv')
-.then ( data => {
-    data.forEach(d => {
-        d.weekNum = getWeekNumber(d.week);
-        d.rank = +d.rank;
-    })
+// Define paths to your CSV and JSON files
+const csvPath = "data/data.csv";
+const jsonPath = "data/world-map.json";
 
-    canada_top_5 = data.filter(d => d.country === 'Canada' && d.rank <= 5);
+// Use Promise.all to load both CSV and JSON files
+Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => {
+  // csvData is the loaded data from the CSV file
+  // jsonData is the loaded data from the JSON file
+  csvData.forEach(d => {
+    d.weekNum = getWeekNumber(d.week);
+    d.rank = +d.rank;
+  })
 
-    lineChart = new LineChart({parentElement: '#line-chart'}, canada_top_5);
-    lineChart.updateVis();
+  canada_top_5 = csvData.filter(d => d.country === 'Canada' && d.rank <= 5);
 
-    const defaultCountry = 'Canada';
-    const defaultDate = '2022-06-16';
+  // BUILD CHARTS HERE
+  const defaultCountry = "Canada";
+  const defaultDate = "2022-06-16";
 
+  const slopeChart = new SlopeChart(
+    {
+      parentElement: '#slope-chart',
+      defaultCountry: defaultCountry,
+      defaultDate: defaultDate
+  },
+    csvData
+  );
 
-    const slopeChart = new SlopeChart({parentElement: '#slope-chart', defaultCountry: defaultCountry, defaultDate: defaultDate}, data);
-})
+  lineChart = new LineChart({
+    parentElement: '#line-chart'}, 
+    canada_top_5);
+  lineChart.updateVis();
+  
+  choroplethMap = new ChoroplethMap(
+    { parentElement: "#choropleth-map", projection: d3.geoMercator(), defaultDate: defaultDate },
+    jsonData,
+    csvData
+  );
+  choroplethMap.updateVis();
+  // You can use jsonData in your charts as needed
+});
+
 
 // helper function that returns the week number given a date string from 2022
 function getWeekNumber(dateString) {
