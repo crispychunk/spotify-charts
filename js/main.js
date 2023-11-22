@@ -23,11 +23,11 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
   );
 
   choroplethMap = new ChoroplethMap(
-    { parentElement: "#choropleth-map", projection: d3.geoMercator() },
+    { parentElement: "#choropleth-map", projection: d3.geoMercator(), defaultDate: defaultDate },
     jsonData,
     csvData
   );
-  choroplethMap.renderVis();
+  choroplethMap.updateVis();
   // You can use jsonData in your charts as needed
 });
 

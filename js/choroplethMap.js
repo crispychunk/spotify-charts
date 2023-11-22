@@ -11,6 +11,7 @@ class ChoroplethMap {
       containerHeight: _config.containerHeight || 550,
       margin: _config.margin || { top: 0, right: 0, bottom: 0, left: 0 },
       projection: _config.projection || d3.geoMercator(),
+      default_date: _config.defaultDate,
     };
     this.data = _data;
     this.songData = _song_data;
@@ -40,7 +41,57 @@ class ChoroplethMap {
 
     vis.geoPath = d3.geoPath().projection(vis.config.projection);
 
+    // Genre Colour Scale
+    vis.colorScale = d3
+      .scaleOrdinal()
+      .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf"]);
+  }
+
+  updateVis() {
+    let vis = this;
+
+    vis.uniqueGenres = new Set(
+      vis.songData.map(function (d) {
+        return d.artist_genre;
+      })
+    );
+    vis.uniqueGenres = Array.from(vis.uniqueGenres);
+    vis.colorScale.domain(vis.uniqueGenres);
+    vis.filteredSong = d3.group(
+      vis.songData,
+      (d) => d.week,
+      (d) => d.country
+    );
+    vis.filteredSong = vis.filteredSong.get(vis.config.default_date);
+
+    // Modify USA country to fit with dataset
+    let USObject = vis.data.features.find((d) => d.properties.ADMIN == "United States of America");
+    USObject.properties.ADMIN = "United States";
+    // Find number of genres
+    // Now combine dataset
+    vis.data.features.forEach((d) => {
+      for (var [mapKey, mapValue] of vis.filteredSong) {
+        if (mapKey == d.properties.ADMIN) {
+          const topGenre = this.findTopGenre(mapValue);
+          d.properties.top_genre = topGenre;
+        }
+      }
+    });
     vis.renderVis();
+  }
+
+  findTopGenre(data) {
+    let counts = d3.rollup(
+      data,
+      (v) => v.length,
+      (d) => d.artist_genre
+    );
+    const maxCount = d3.max(counts, (d) => d[1]);
+    for (const [key, value] of counts) {
+      if (value === maxCount) {
+        return key;
+      }
+    }
   }
 
   /**
@@ -49,7 +100,18 @@ class ChoroplethMap {
   renderVis() {
     let vis = this;
     // Draw the map
-    vis.chart.selectAll("path").data(vis.data.features).join("path").attr("d", vis.geoPath).attr("class", "world-map");
+    vis.chart
+      .selectAll("path")
+      .data(vis.data.features)
+      .join("path")
+      .attr("d", vis.geoPath)
+      .attr("class", "world-map")
+      .attr("fill", (d) => {
+        if (d.properties.top_genre) {
+          return vis.colorScale(d.properties.top_genre);
+        }
+        return "#808080";
+      });
 
     // Additional code for rendering other visual elements on the map can be added here
   }
