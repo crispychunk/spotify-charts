@@ -1,4 +1,4 @@
-class radarChart {
+class RadarChart {
     constructor(_config, _data) {
         this.config = {
             parentElement: _config.parentElement,
@@ -19,19 +19,8 @@ class radarChart {
 
         this.features = ["Acousticness", "Danceability", "Instrumentalness", "Liveness", "Energy", "Valence", "Speechiness"];
 
-        this.genreColors = {
-            'hip hop': '#8dd3c7',
-            'other': '#ffffb3',
-            'pop': '#bebada',
-            'rap': '#fb8072',
-            'reggaeton': '#80b1d3',
-            'rock': '#fdb462',
-            'latin': '#b3de69',
-            'r&b': '#fccde5',
-        };
-
         // Add a color scale for genres
-        this.colorScale = d3.scaleOrdinal().range(Object.values(this.genreColors));
+        this.colorScale = _config.colorScale
 
         this.data = _data;
         this.initVis();
@@ -40,7 +29,7 @@ class radarChart {
     angleToCoordinate(angle, value) {
         let x = Math.cos(angle) * this.radialScale(value);
         let y = Math.sin(angle) * this.radialScale(value);
-        return { "x": this.width / 2 + x, "y": this.height / 2 - y };
+        return {"x": this.width / 2 + x, "y": this.height / 2 - y};
     }
 
     getPathCoordinates(data_point) {
@@ -60,8 +49,6 @@ class radarChart {
 
         vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
         vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
-
-
 
 
         vis.svg = d3
@@ -136,28 +123,28 @@ class radarChart {
         let legend = vis.svg
             .append("g")
             .attr("class", "legend")
-            .attr("transform", `translate(${vis.width + vis.config.margin.right-45}, ${vis.config.margin.top})`);
+            .attr("transform", `translate(${vis.width + vis.config.margin.right - 45}, ${vis.config.margin.top})`);
 
         // Create legend color rectangles
         let legendRects = legend
             .selectAll(".legend-rect")
-            .data(Object.entries(vis.genreColors))
+            .data(vis.colorScale.domain())
             .join("rect")
             .attr("class", "legend-rect")
             .attr("width", 15)
             .attr("height", 15)
             .attr("y", (_, i) => i * 20)
-            .attr("fill", d => d[1]);
+            .attr("fill", d => vis.colorScale(d));
 
         // Create legend labels
         legend
             .selectAll(".legend-label")
-            .data(Object.entries(vis.genreColors))
+            .data(vis.colorScale.domain())
             .join("text")
             .attr("class", "legend-label")
             .attr("x", 20)
             .attr("y", (_, i) => i * 20 + 12)
-            .text(d => d[0]);
+            .text(d => d);
 
 
         vis.updateVis();
@@ -188,7 +175,6 @@ class radarChart {
                     .attr("fill", (_, i) => vis.colorScale(vis.data[i].Genre))
                     .attr("stroke-opacity", 1)
                     .attr("fill-opacity", 0.4)
-
             );
 
 
@@ -206,12 +192,7 @@ class radarChart {
             .attr("fill", "gray")
 
 
-
     }
-
-
-
-
 
 
 }

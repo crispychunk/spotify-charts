@@ -1,30 +1,40 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>D3 Project Starter Template</title>
-    <meta charset="UTF-8" />
-    <link rel="icon" href="data:;base64,iVBORwOKGO=" />
-    <link rel="stylesheet" href="css/style.css" />
-  </head>
-  <body>
-    <!-- Add HTML content, SVG drawing area, ... -->
-    <div>
-      <div id="choropleth-map"></div>
-      <svg id="slope-chart"></svg>
-      <div>
-        <svg id="line-chart"></svg>
-        <svg id="vis"></svg>
-      </div>
+    <meta charset="UTF-8"/>
+    <link rel="icon" href="data:;base64,iVBORwOKGO="/>
+    <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<!-- Add HTML content, SVG drawing area, ... -->
+<div class="align-container">
+    <div class="container">
+        <div id="choropleth-map"></div>
     </div>
-    <!-- D3 bundle -->
-    <script src="js/d3.v6.min.js"></script>
-    <!-- Other dependencies -->
-    <script src="js/topojson.v3.js"></script>
-    <!-- Our JS code -->
-    <script src="js/main.js"></script>
-    <script src="js/slopeChart.js"></script>
-    <script src="js/choroplethMap.js"></script>
-    <script src="js/lineChart.js"></script>
-    <script src="js/radarChart.js"></script>
-  </body>
+    <div class="container">
+        <svg id="slope-chart"></svg>
+    </div>
+</div>
+
+<div class="align-container">
+    <div class="container">
+        <svg id="spider-chart"></svg>
+    </div>
+    <div class="container">
+        <svg id="line-chart"></svg>
+    </div>
+</div>
+
+<!-- D3 bundle -->
+<script src="js/d3.v6.min.js"></script>
+<!-- Other dependencies -->
+<script src="js/topojson.v3.js"></script>
+<!-- Our JS code -->
+<script src="js/main.js"></script>
+<script src="js/slopeChart.js"></script>
+<script src="js/choroplethMap.js"></script>
+<script src="js/lineChart.js"></script>
+<script src="js/radarChart.js"></script>
+</body>
 </html>

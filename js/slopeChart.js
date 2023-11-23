@@ -7,8 +7,8 @@ class SlopeChart {
     constructor(_config, _data) {
         this.config = {
             parentElement: _config.parentElement,
-            containerWidth: 1050,
-            containerHeight: 700,
+            containerWidth: 705,
+            containerHeight: 550,
             margin: {
                 top: 30,
                 right: 100,
@@ -18,9 +18,10 @@ class SlopeChart {
         }
 
         this.data = _data
-        this.selectedCountry = [_config.defaultCountry];
+        this.selectedCountry = [_config.defaultCountry, 'United States'];
         this.selectedDate = _config.defaultDate;
         this.allGenre = ['pop', 'reggaeton', 'rock', 'latin', 'hip hop', 'rap', 'r&b', 'other']
+        this.colorScale = _config.colorScale;
         this.initVis();
     }
 
@@ -38,7 +39,6 @@ class SlopeChart {
         vis.chart = vis.svg.append('g')
             .attr('transform', `translate(${vis.config.margin.left},${vis.config.margin.top})`);
 
-        vis.colorScale = d3.scaleOrdinal(d3.schemeSet3);
         vis.rankScale = d3.scaleLinear().range([1, 9]);
         vis.xScale = d3.scalePoint().range([0, vis.config.width]).padding(1.2);
         vis.yScale = d3.scaleLinear().range([0, vis.config.height]);
@@ -53,18 +53,14 @@ class SlopeChart {
                 }
             });
 
-        vis.yAxis = d3.axisLeft(vis.yScale)
-            .tickSize(0)
-            .ticks(20)
-
         vis.xAxisG = vis.chart.append('g')
             .attr('class', 'axis x-axis')
             .attr('transform', `translate(0, ${vis.config.height + vis.config.margin.bottom})`);
 
         vis.yAxisG = vis.chart.append('g')
-            .attr('class', 'axis y-axis')
+            .attr('class', 'axis y-axis');
 
-        // legend
+        // Creating Legend
         const legend = vis.svg.append("g")
             .attr("class", "legend")
             .attr("transform", `translate(${vis.config.width + 50},${vis.config.margin.top})`);
@@ -86,9 +82,6 @@ class SlopeChart {
             .attr("y", 12)
             .attr("font-size", 12)
             .text(d => d);
-
-
-        vis.updateVis();
     }
 
 
@@ -109,7 +102,6 @@ class SlopeChart {
 
         vis.xScale.domain([0, 1]);
         vis.yScale.domain([1, 20]);
-        vis.colorScale.domain(vis.allGenre);
         vis.rankScale.domain([0, 19]);
 
 
@@ -171,9 +163,6 @@ class SlopeChart {
             .call(vis.xAxis)
             .call(g => g.select('.domain').remove());
 
-        vis.yAxisG
-            .call(vis.yAxis)
-            .call(g => g.select('.domain').remove());
 
     }
 

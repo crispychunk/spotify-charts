@@ -1,6 +1,13 @@
 let choroplethMap;
 let lineChart;
 let features = ["Acousticness", "Danceability", "Instrumentalness", "Liveness", "Energy", "Valence", "Speechiness"];
+let genres = ['pop', 'reggaeton', 'rock', 'latin', 'hip hop', 'rap', 'r&b', 'other'];
+let loadedData = []
+
+let colorScale = d3
+    .scaleOrdinal()
+    .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf"])
+    .domain(genres);
 
 // Define paths to your CSV and JSON files
 const csvPath = "data/data.csv";
@@ -8,14 +15,14 @@ const jsonPath = "data/world-map.json";
 
 // Use Promise.all to load both CSV and JSON files
 Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => {
-  // csvData is the loaded data from the CSV file
-  // jsonData is the loaded data from the JSON file
-  csvData.forEach(d => {
-    d.weekNum = getWeekNumber(d.week);
-    d.rank = +d.rank;
-  })
-  
-   // Assuming you want to use certain columns for radar chart features
+    // csvData is the loaded data from the CSV file
+    // jsonData is the loaded data from the JSON file
+    csvData.forEach(d => {
+        d.weekNum = getWeekNumber(d.week);
+        d.rank = +d.rank;
+    })
+
+    // Assuming you want to use certain columns for rada chart features
     loadedData = csvData.slice(0, 5).map(d => ({
         Acousticness: +d.acousticness,
         Danceability: +d.danceability,
@@ -26,38 +33,45 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
         Speechiness: +d.speechiness,
         Genre: d.artist_genre
     }));
-  
-  
-  canada_top_5 = csvData.filter(d => d.country === 'Canada' && d.rank <= 5);
 
-  // BUILD CHARTS HERE
-  const defaultCountry = "Canada";
-  const defaultDate = "2022-06-16";
 
-  const slopeChart = new SlopeChart(
-    {
-      parentElement: '#slope-chart',
-      defaultCountry: defaultCountry,
-      defaultDate: defaultDate
-  },
-    csvData
-  );
+    let canada_top_5 = csvData.filter(d => d.country === 'Canada' && d.rank <= 5);
+    const defaultCountry = "Canada";
+    const defaultDate = "2022-06-16";
 
-  lineChart = new LineChart({
-    parentElement: '#line-chart'}, 
-    canada_top_5);
-  lineChart.updateVis();
-  
-  choroplethMap = new ChoroplethMap(
-    { parentElement: "#choropleth-map", projection: d3.geoMercator(), defaultDate: defaultDate },
-    jsonData,
-    csvData
-  );
-  choroplethMap.updateVis();
-  // You can use jsonData in your charts as needed
-  
-  const radarchart = new radarChart({ parentElement: "#vis" }, loadedData);
-  radarchart.updateVis();
+    const slopeChart = new SlopeChart(
+        {
+            parentElement: '#slope-chart',
+            defaultCountry: defaultCountry,
+            defaultDate: defaultDate,
+            colorScale: colorScale,
+        },
+        csvData
+    );
+
+    slopeChart.updateVis();
+
+    lineChart = new LineChart({
+            parentElement: '#line-chart'
+        },
+        canada_top_5);
+    lineChart.updateVis();
+
+    choroplethMap = new ChoroplethMap(
+        {
+            parentElement: "#choropleth-map",
+            projection: d3.geoMercator(),
+            defaultDate: defaultDate,
+            colorScale: colorScale,
+        },
+        jsonData,
+        csvData
+    );
+    choroplethMap.updateVis();
+    // You can use jsonData in your charts as needed
+
+    const radarchart = new RadarChart({parentElement: "#spider-chart", colorScale: colorScale}, loadedData);
+    radarchart.updateVis();
 });
 
 
@@ -80,6 +94,6 @@ function getWeekNumber(dateString) {
     let month = dateString.split('-')[1];
     let day = dateString.split('-')[2];
     let weekNumber = Math.ceil((monthToDaysMap[month] + parseInt(day)) / 7);
-   
+
     return weekNumber;
 }

@@ -15,6 +15,7 @@ class ChoroplethMap {
     };
     this.data = _data;
     this.songData = _song_data;
+    this.colorScale = _config.colorScale;
     this.initVis();
   }
 
@@ -41,10 +42,6 @@ class ChoroplethMap {
 
     vis.geoPath = d3.geoPath().projection(vis.config.projection);
 
-    // Genre Colour Scale
-    vis.colorScale = d3
-      .scaleOrdinal()
-      .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf"]);
 
     // Legend
     vis.legend = vis.svg
@@ -62,7 +59,6 @@ class ChoroplethMap {
       })
     );
     vis.uniqueGenres = Array.from(vis.uniqueGenres);
-    vis.colorScale.domain(vis.uniqueGenres);
     vis.filteredSong = d3.group(
       vis.songData,
       (d) => d.week,
