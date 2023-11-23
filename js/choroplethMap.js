@@ -8,7 +8,7 @@ class ChoroplethMap {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: _config.containerWidth || 1000,
-      containerHeight: _config.containerHeight || 550,
+      containerHeight: _config.containerHeight || 750,
       margin: _config.margin || { top: 0, right: 0, bottom: 0, left: 0 },
       projection: _config.projection || d3.geoMercator(),
       default_date: _config.defaultDate,
@@ -39,7 +39,7 @@ class ChoroplethMap {
     // Append group element that will contain our actual chart
     // and position it according to the given margin config
     vis.chart = vis.svg.append("g").attr("transform", `translate(${vis.config.margin.left},${vis.config.margin.top})`);
-
+    vis.config.projection = d3.geoMercator().fitSize([vis.config.containerWidth,vis.config.containerHeight-50], vis.data);
     vis.geoPath = d3.geoPath().projection(vis.config.projection);
 
 
@@ -48,6 +48,23 @@ class ChoroplethMap {
       .append("g")
       .attr("class", "legend")
       .attr("transform", `translate(${vis.config.margin.left},${vis.height - 180})`);
+
+
+
+    //Timeline
+    vis.slider = d3.sliderBottom()
+    .min(0)
+    .max(2000)
+    .width(vis.config.containerWidth)
+    .height(200)
+    .tickFormat(d3.timeFormat("%b %Y"))
+    .ticks(12)
+    .on('onchange', val => {
+        // Handle changes in the time range
+        console.log(val);
+    });
+
+    
   }
 
   updateVis() {
@@ -67,13 +84,18 @@ class ChoroplethMap {
     vis.filteredSong = vis.filteredSong.get(vis.config.default_date);
 
     // Modify USA country to fit with dataset
-    let USObject = vis.data.features.find((d) => d.properties.ADMIN == "United States of America");
-    USObject.properties.ADMIN = "United States";
+    let USObject = vis.data.features.find((d) => d.properties.admin == "United States of America");
+    USObject.properties.admin = "United States";
 
+
+    let KoreaObject = vis.data.features.find((d) => d.properties.admin == "South Korea");
+    KoreaObject.properties.admin = "Korea";
+
+    
     // Now combine dataset
     vis.data.features.forEach((d) => {
       for (var [mapKey, mapValue] of vis.filteredSong) {
-        if (mapKey == d.properties.ADMIN) {
+        if (mapKey == d.properties.admin) {
           const topGenre = this.findTopGenre(mapValue);
           d.properties.top_genre = topGenre;
         }
@@ -119,7 +141,7 @@ class ChoroplethMap {
       .selectAll("g")
       .data(vis.colorScale.domain())
       .join("g")
-      .attr("transform", (d, i) => `translate(0, ${i * 20})`);
+      .attr("transform", (d, i) => `translate(0, ${i * 20-40})`);
 
     vis.legendItems
       .append("rect")
@@ -133,6 +155,12 @@ class ChoroplethMap {
       .attr("y", 9) // Adjust the position as needed
       .attr("dy", "0.35em")
       .text((d) => d);
-    // Additional code for rendering other visual elements on the map can be added here
+
+    vis.timelineSlider = vis.svg.append('g')
+    .attr('class', 'slider')
+    .attr('transform', `translate(0, ${vis.height-40})`)
+    .call(vis.slider);
   }
+
+
 }

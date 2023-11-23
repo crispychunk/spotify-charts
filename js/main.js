@@ -11,7 +11,7 @@ let colorScale = d3
 
 // Define paths to your CSV and JSON files
 const csvPath = "data/data.csv";
-const jsonPath = "data/world-map.json";
+const jsonPath = "data/world-map-50m.json";
 
 // Use Promise.all to load both CSV and JSON files
 Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => {
@@ -34,7 +34,7 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
         Genre: d.artist_genre
     }));
 
-
+    console.log(jsonData)
     let canada_top_5 = csvData.filter(d => d.country === 'Canada' && d.rank <= 5);
     const defaultCountry = "Canada";
     const defaultDate = "2022-06-16";
