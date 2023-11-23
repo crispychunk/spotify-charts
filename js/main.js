@@ -34,7 +34,6 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
         Genre: d.artist_genre
     }));
 
-    console.log(jsonData)
     let canada_top_5 = csvData.filter(d => d.country === 'Canada' && d.rank <= 5);
     const defaultCountry = "Canada";
     const defaultDate = "2022-06-16";
