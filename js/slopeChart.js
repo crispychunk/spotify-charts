@@ -7,8 +7,8 @@ class SlopeChart {
     constructor(_config, _data) {
         this.config = {
             parentElement: _config.parentElement,
-            containerWidth: 705,
-            containerHeight: 550,
+            containerWidth: 800,
+            containerHeight: 750,
             margin: {
                 top: 30,
                 right: 100,
@@ -89,88 +89,91 @@ class SlopeChart {
      *
      */
     updateVis() {
-        let vis = this
-        vis.data = d3.group(vis.data, d => d.week, d => d.country);
+        let vis = this;
+
+        vis.filteredData = d3.group(vis.data, d => d.week, d => d.country);
         vis.filteredData = vis.searchAndJoinCountry();
 
+        // Ensure the color scale domain is set based on the genres in the current data
+        vis.colorScale.domain(vis.allGenre);
 
         vis.colorValue = d => d.artist_genre;
         vis.xValue = d => d.country;
         vis.yValue = d => d.rank;
         vis.calculateStrength = d => Math.abs(d['country1'] - d['country2']);
 
-
         vis.xScale.domain([0, 1]);
         vis.yScale.domain([1, 20]);
         vis.rankScale.domain([0, 19]);
 
-
         vis.renderVis();
-
     }
 
     renderVis() {
-
         let vis = this;
 
         const line = d3.line()
             .x((d, i) => vis.xScale(i))
             .y(vis.yScale);
 
-
-        vis.chart.append("g")
-            .attr("fill", "none")
-            .attr("stroke", "currentColor")
-            .selectAll("path")
+        // Select all existing paths and update them
+        vis.chart.selectAll(".slope-line")
             .data(vis.filteredData)
-            .join("path")
-            .attr("d", (d => {
-                if (d['country2'] === undefined || d['country1'] === undefined) {
-                    return "";
-                }
-                return line([d['country1'], d['country2']])
-            }))
-            .attr("stroke", d => vis.colorScale(vis.colorValue(d)))
-            .attr("stroke-width", d => vis.rankScale(vis.calculateStrength(d)))
+            .join(
+                enter => enter
+                    .append("path")
+                    .attr("class", "slope-line")
+                    .attr("fill", "none")
+                    .attr("stroke", "currentColor")
+                    .attr("stroke-width", d => vis.rankScale(vis.calculateStrength(d)))
+                    .attr("d", d => {
+                        if (d['country2'] === undefined || d['country1'] === undefined) {
+                            return "";
+                        }
+                        return line([d['country1'], d['country2']]);
+                    })
+                    .attr("stroke", d => vis.colorScale(vis.colorValue(d))),
+                update => update
+                    .attr("stroke", d => vis.colorScale(vis.colorValue(d)))
+                    .attr("d", d => {
+                        if (d['country2'] === undefined || d['country1'] === undefined) {
+                            return "";
+                        }
+                        return line([d['country1'], d['country2']]);
+                    })
+            );
 
-
-        // Add text for country1 on the left
+        // Select all existing text for country1 and update them
         vis.chart.selectAll(".text-country1")
-            .data(vis.filteredData)
-            .enter()
-            .filter(d => d['country1'] !== undefined)  // Only include data with country1 defined
-            .append("text")
-            .attr("class", "song-text")
+            .data(vis.filteredData.filter(d => d['country1'] !== undefined))
+            .join("text")
+            .attr("class", "song-text text-country1")
             .attr("text-anchor", "end")
             .attr("x", d => vis.xScale(0))
             .attr("y", d => vis.yScale(d['country1']))
             .text(d => d['track_name'] + ' ' + d['country1']);
 
-        // Add text for country2 on the right
+        // Select all existing text for country2 and update them
         vis.chart.selectAll(".text-country2")
-            .data(vis.filteredData)
-            .enter()
-            .filter(d => d['country2'] !== undefined)  // Only include data with country2 defined
-            .append("text")
-            .attr("class", "song-text")
+            .data(vis.filteredData.filter(d => d['country2'] !== undefined))
+            .join("text")
+            .attr("class", "song-text text-country2")
             .attr("text-anchor", "start")
             .attr("x", vis.xScale(1))
             .attr("y", d => vis.yScale(d['country2']))
             .text(d => d['country2'] + ' ' + d['track_name']);
 
-
         vis.xAxisG
             .call(vis.xAxis)
             .call(g => g.select('.domain').remove());
-
-
     }
+
 
     searchAndJoinCountry() {
         let vis = this;
         let map = new Map();
         vis.selectedCountry.forEach((country) => {
-            let countryData = vis.data.get(vis.selectedDate).get(country);
+            let countryData = vis.filteredData.get(vis.selectedDate).get(country);
             let countryIndex = vis.selectedCountry.indexOf(country) + 1;
             let key = 'country' + countryIndex;
             countryData.forEach(song => {

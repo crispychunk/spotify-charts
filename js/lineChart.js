@@ -16,8 +16,8 @@ class LineChart {
             },
         };
         this.data = _data;
-        // TODO temp data
-        this.week_1_top_songs = _data.filter(d => d.weekNum === 1).map(d => d.track_name);
+        this.selectedDate = _config.defaultDate;
+        this.selectedCountry = _config.defaultCountry;
 
         this.initVis();
     }
@@ -70,7 +70,32 @@ class LineChart {
             .text("Rank");
 
 
-        // legend
+        vis.updateVis();
+    }
+
+    updateVis() {
+        let vis = this;
+        // TODO
+        vis.top_5_songs_in_country = this.data.filter(d => d.country === vis.selectedCountry && d.rank <= 5 );
+        vis.week_1_top_songs = vis.top_5_songs_in_country.filter(d => d.weekNum === getWeekNumber(vis.selectedDate)).map(d => d.track_name);
+        console.log(vis.selectedDate)
+        console.log(vis.top_5_songs_in_country);
+        console.log(vis.week_1_top_songs)
+
+        vis.xScale.domain([1, 25]);
+        vis.yScale.domain([1, 5]);
+        vis.colourScale.domain(vis.week_1_top_songs);
+
+        vis.renderVis();
+    }
+
+    renderVis() {
+        let vis = this;
+
+        // Remove existing legend
+        vis.svg.select(".legend").remove();
+
+        // Create a new legend
         const legend = vis.svg.append("g")
             .attr("class", "legend")
             .attr("transform", `translate(${50},${vis.height + 100})`);
@@ -83,7 +108,7 @@ class LineChart {
 
         legendItems.append("circle")
             .attr("r", 6)
-            .attr("fill", d => vis.colourScale(d))
+            .attr("fill", d => vis.colourScale(d));
 
         legendItems.append("text")
             .attr("x", 20)
@@ -91,37 +116,21 @@ class LineChart {
             .attr("font-size", 12)
             .text(d => d);
 
-        vis.updateVis();
-    }
+        // Remove existing circles and paths
+        vis.chart.selectAll("circle").remove();
+        vis.chart.selectAll(".line").remove();
 
-    updateVis() {
-        let vis = this;
-        // TODO
-        vis.xScale.domain([1, 25]);
-        vis.yScale.domain([1, 5]);
-        vis.colourScale.domain(vis.week_1_top_songs);
-
-        vis.renderVis();
-    }
-
-    renderVis() {
-        let vis = this;
-        // TODO
-        // filter data for selected songs
-        let selected_songs = vis.data.filter(d => vis.week_1_top_songs.includes(d.track_name));
-
+        let selected_songs = vis.top_5_songs_in_country.filter(d => vis.week_1_top_songs.includes(d.track_name));
         let groupedByTrack = d3.group(selected_songs, d => d.track_name);
 
-        vis.chart.selectAll("circle")
-            .append("g")
-            .data(selected_songs)
-            .enter()
-            .append("circle")
-            .attr("r", 6)
-            .attr("cx", d => vis.xScale(d.weekNum))
-            .attr("cy", d => vis.yScale(d.rank))
-            .style("fill", d => vis.colourScale(d.track_name))
-            .style("stroke", "black")
+        selected_songs.forEach(d => {
+            vis.chart.append("circle")
+                .attr("r", 6)
+                .attr("cx", vis.xScale(d.weekNum))
+                .attr("cy", vis.yScale(d.rank))
+                .style("fill", vis.colourScale(d.track_name))
+                .style("stroke", "black");
+        });
 
         let line = d3.line()
             .x(d => vis.xScale(d.weekNum))

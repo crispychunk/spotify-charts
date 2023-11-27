@@ -37,6 +37,7 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
     let canada_top_5 = csvData.filter(d => d.country === 'Canada' && d.rank <= 5);
     const defaultCountry = "Canada";
     const defaultDate = "2022-06-16";
+    const dispatcher = d3.dispatch('changeWeek')
 
     const slopeChart = new SlopeChart(
         {
@@ -51,9 +52,11 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
     slopeChart.updateVis();
 
     lineChart = new LineChart({
-            parentElement: '#line-chart'
+            parentElement: '#line-chart',
+            defaultDate: defaultDate,
+            defaultCountry: defaultCountry,
         },
-        canada_top_5);
+        csvData);
     lineChart.updateVis();
 
     choroplethMap = new ChoroplethMap(
@@ -64,13 +67,31 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
             colorScale: colorScale,
         },
         jsonData,
-        csvData
+        csvData,
+        dispatcher
     );
     choroplethMap.updateVis();
     // You can use jsonData in your charts as needed
 
     const radarchart = new RadarChart({parentElement: "#spider-chart", colorScale: colorScale}, loadedData);
     radarchart.updateVis();
+
+    dispatcher.on('changeWeek', week => {
+        week = new Date(week).toISOString().split('T')[0];
+        console.log(week);
+
+        // TODO Implement RadarChart week change interaction
+        slopeChart.selectedDate = week;
+        lineChart.selectedDate = week;
+        choroplethMap.config.default_date = week;
+        // radarchart.config.defaultDate = week;
+
+        slopeChart.updateVis();
+        lineChart.updateVis();
+        choroplethMap.updateVis();
+        // radarchart.updateVis();
+    });
+
 });
 
 

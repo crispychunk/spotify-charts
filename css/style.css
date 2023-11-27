@@ -29,3 +29,10 @@ body {
 .align-container {
   display: inline-flex;
 }
+
+.visualization-container {
+  align-items: center;
+  align-content: center;
+  align-self: center;
+  text-align: center;
+}
