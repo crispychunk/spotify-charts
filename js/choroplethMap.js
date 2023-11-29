@@ -9,6 +9,7 @@ class ChoroplethMap {
             parentElement: _config.parentElement,
             containerWidth: _config.containerWidth || 1000,
             containerHeight: _config.containerHeight || 750,
+            tooltipPadding: 15,
             margin: _config.margin || {top: 0, right: 0, bottom: 0, left: 0},
             projection: _config.projection || d3.geoMercator(),
             default_date: _config.defaultDate,
@@ -17,6 +18,7 @@ class ChoroplethMap {
         this.songData = _song_data;
         this.colorScale = _config.colorScale;
         this.dispatcher = _dispatcher;
+        this.selectedCountry = _config.defaultCountry ? [_config.defaultCountry] : [];
         this.initVis();
     }
 
@@ -62,6 +64,7 @@ class ChoroplethMap {
             .ticks(weeks.length)
             .marks(weeks)
             .tickValues(weeks)
+            .displayValue(false)
             .on('onchange', week => {
                 vis.dispatcher.call('changeWeek', null, week)
             });
@@ -91,27 +94,41 @@ class ChoroplethMap {
         vis.filteredSong = vis.filteredSong.get(vis.config.default_date);
 
         // Modify USA country to fit with dataset
-        let USObject = vis.data.features.find((d) => d.properties.admin == "United States of America");
+        let USObject = vis.data.features.find((d) => d.properties.admin === "United States of America");
         if (USObject) {
             USObject.properties.admin = "United States";
         }
 
 
-        let KoreaObject = vis.data.features.find((d) => d.properties.admin == "South Korea");
+        let KoreaObject = vis.data.features.find((d) => d.properties.admin === "South Korea");
         if (KoreaObject) {
             KoreaObject.properties.admin = "Korea";
         }
 
+        vis.data.features.forEach((d) => {
+            d.properties.top_genre = null;
+        })
 
         // Now combine dataset
         vis.data.features.forEach((d) => {
-            for (var [mapKey, mapValue] of vis.filteredSong) {
-                if (mapKey == d.properties.admin) {
+            for (let [mapKey, mapValue] of vis.filteredSong) {
+                if (mapKey === d.properties.admin) {
                     const topGenre = this.findTopGenre(mapValue);
                     d.properties.top_genre = topGenre;
                 }
             }
         });
+
+        // Filter selectedCountry Array if country data is not valid
+        vis.data.features.forEach((d) => {
+            if (!d.properties.top_genre && vis.selectedCountry.includes(d.properties.admin)) {
+                vis.selectedCountry = vis.selectedCountry.filter((item) => item !== d.properties.admin);
+            }
+        });
+
+        // Update other visualizations if country is filtered
+        vis.dispatcher.call('changeCountry', null, vis.selectedCountry);
+
         vis.renderVis();
     }
 
@@ -141,12 +158,96 @@ class ChoroplethMap {
             .join("path")
             .attr("d", vis.geoPath)
             .attr("class", "world-map")
+            .attr("id", d => vis.sanitizeCountryID(d.properties.admin))
             .attr("fill", (d) => {
                 if (d.properties.top_genre) {
                     return vis.colorScale(d.properties.top_genre);
                 }
                 return "#808080";
+            })
+            .on('mouseenter', (event, d) => {
+                // If the dataset contains a valid country, display the tooltip for that country
+                if (d.properties.top_genre) {
+                    d3.select('#choropleth-map-tooltip')
+                        .style('display', 'block')
+                        .html(() => {
+                            return (`
+                        <div class="tooltip-label">${d.properties.admin}</div>
+                        `)
+                        });
+                    // If the map shows a valid country, then change cursor to a pointer
+                    vis.chart.style('cursor', 'pointer');
+                }
+            })
+            .on('mouseleave', () => {
+                d3.select('#choropleth-map-tooltip').style('display', 'none');
+                // When mouse leaves map, change pointer back to cursor
+                vis.chart.style('cursor', 'auto');
+            })
+            .on('mousemove', (event) => {
+                // Move tooltip based on cursor position
+                d3.select('#choropleth-map-tooltip')
+                    .style('left', (event.pageX + vis.config.tooltipPadding) + 'px')
+                    .style('top', (event.pageY + vis.config.tooltipPadding) + 'px')
+            })
+            .on('click', (event, d) => {
+                let country = d.properties.admin;
+
+                // Upon clicking a country, the selectedCountry array can hold a maximum of 2 countries and a minimum of 1 country
+                if (d.properties.top_genre) {
+                    let selectedCountry = d3.select(event.target);
+                    selectedCountry.classed('highlight-country', d => {
+                        // if (!selectedCountry.classed('highlight-country') && vis.selectedCountry.length < 2) {
+                        //     vis.selectedCountry.push(country);
+                        // } else if (vis.selectedCountry.length >= 2 && vis.selectedCountry.includes('Global')) {
+                        //     vis.selectedCountry = vis.selectedCountry.filter(d => d !== 'Global');
+                        //     vis.selectedCountry.push(country);
+                        // } else if (vis.selectedCountry.length >= 2 && !vis.selectedCountry.includes(country) && !vis.selectedCountry.includes('Global')) {
+                        //     return selectedCountry.classed('highlight-country');
+                        // } else if (vis.selectedCountry.length > 1) {
+                        //     vis.selectedCountry = vis.selectedCountry.filter(item => item !== country);
+                        // } else if (vis.selectedCountry.length === 1 && vis.selectedCountry.includes(country)) {
+                        //     return selectedCountry.classed('highlight-country');
+                        // }
+                        // vis.dispatcher.call('changeCountry', null, vis.selectedCountry);
+                        // return !selectedCountry.classed('highlight-country');
+                        if (vis.selectedCountry.includes('Global')) {
+                            if (selectedCountry.classed('highlight-country') && vis.selectedCountry.includes(country)) {
+                                console.log('enter: unselected a country and GLOBAL is in array')
+                                vis.selectedCountry = vis.selectedCountry.filter(d => d !== country)
+                            }
+                            else if (!selectedCountry.classed('highlight-country') && !vis.selectedCountry.includes(country) && vis.selectedCountry.length >= 2) {
+                                vis.selectedCountry = vis.selectedCountry.filter(d => d !== 'Global');
+                                vis.selectedCountry.push(country);
+                            } else if (!selectedCountry.classed('highlight-country') && vis.selectedCountry.length <= 1) {
+                                vis.selectedCountry.push(country)
+                            } else {
+                                vis.selectedCountry.push('Global');
+                            }
+                        } else {
+                            if (selectedCountry.classed('highlight-country') && vis.selectedCountry.length === 2) {
+                                vis.selectedCountry = vis.selectedCountry.filter(d => d !== country);
+                                vis.selectedCountry.push('Global');
+                            } else if (!selectedCountry.classed('highlight-country') && vis.selectedCountry.length < 1) {
+                                vis.selectedCountry.push('Global');
+                                vis.selectedCountry.push(country);
+                            } else if (vis.selectedCountry.length >= 2 && !selectedCountry.classed('highlight-country')) {
+                                return;
+                            }
+                        }
+                        vis.dispatcher.call('changeCountry', null, vis.selectedCountry);
+                        return !selectedCountry.classed('highlight-country');
+                    });
+                }
             });
+
+        // Given the selectedCountry, highlight the borders of the country selected
+        vis.selectedCountry.forEach((d) => {
+            let selectedCountry = d3.selectAll(`#${d}`);
+            if (!selectedCountry.empty()) {
+                selectedCountry.classed('highlight-country', !selectedCountry.classed('highlight-country'));
+            }
+        });
 
         vis.legendItems = vis.legend
             .selectAll("g")
@@ -172,5 +273,25 @@ class ChoroplethMap {
             .call(g => g.select('#slider').remove());
     }
 
+    //Bi-directional interaction that highlights all countries with the selected song
+    handleSlopeChartInteraction(track_name) {
+        let vis = this;
+        let countriesWithSongInTop20 = [];
+        // Find all countries with the selected song as top 20
+        for (let [mapKey, mapValue] of vis.filteredSong) {
+            //TODO make sure if we want to add Hong Kong to map
+            if (mapKey !== 'Global' && mapKey !== 'Hong Kong' && mapValue.some((d) => d.track_name === track_name)) {
+                countriesWithSongInTop20.push(mapKey);
+                d3.selectAll(`#${vis.sanitizeCountryID(mapKey)}`).classed('highlight-top-20', !d3.selectAll(`#${vis.sanitizeCountryID(mapKey)}`).classed('highlight-top-20'))
+            }
+        }
+
+    }
+
+    sanitizeCountryID(country) {
+        return country.replace(/[^a-zA-Z0-9-_]/g, '-');
+    }
+
 
 }
+

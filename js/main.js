@@ -34,11 +34,14 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
         Genre: d.artist_genre
     }));
 
-    let canada_top_5 = csvData.filter(d => d.country === 'Canada' && d.rank <= 5);
-    const defaultCountry = "Canada";
+    // Default values and dispatcher
+    const defaultCountry = null;
     const defaultDate = "2022-06-16";
-    const dispatcher = d3.dispatch('changeWeek')
+    const dispatcher = d3.dispatch('changeWeek', 'changeCountry', 'handleBiDirectionalInteraction')
 
+
+
+    // Visualization intialization
     const slopeChart = new SlopeChart(
         {
             parentElement: '#slope-chart',
@@ -46,7 +49,8 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
             defaultDate: defaultDate,
             colorScale: colorScale,
         },
-        csvData
+        csvData,
+        dispatcher
     );
 
     slopeChart.updateVis();
@@ -63,6 +67,7 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
         {
             parentElement: "#choropleth-map",
             projection: d3.geoMercator(),
+            defaultCountry: defaultCountry,
             defaultDate: defaultDate,
             colorScale: colorScale,
         },
@@ -71,11 +76,14 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
         dispatcher
     );
     choroplethMap.updateVis();
-    // You can use jsonData in your charts as needed
+
 
     const radarchart = new RadarChart({parentElement: "#spider-chart", colorScale: colorScale}, loadedData);
     radarchart.updateVis();
 
+
+
+    // Dispatcher listeners
     dispatcher.on('changeWeek', week => {
         week = new Date(week).toISOString().split('T')[0];
         console.log(week);
@@ -86,11 +94,23 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
         choroplethMap.config.default_date = week;
         // radarchart.config.defaultDate = week;
 
+        choroplethMap.updateVis();
         slopeChart.updateVis();
         lineChart.updateVis();
-        choroplethMap.updateVis();
         // radarchart.updateVis();
     });
+
+    // When the map selects the countries,
+    dispatcher.on('changeCountry', selectedCountries => {
+        slopeChart.selectedCountry = selectedCountries;
+        slopeChart.updateVis();
+    });
+
+    dispatcher.on('handleBiDirectionalInteraction', selectedSong => {
+        choroplethMap.handleSlopeChartInteraction(selectedSong);
+    });
+
+
 
 });
 

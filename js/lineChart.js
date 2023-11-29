@@ -75,12 +75,8 @@ class LineChart {
 
     updateVis() {
         let vis = this;
-        // TODO
         vis.top_5_songs_in_country = this.data.filter(d => d.country === vis.selectedCountry && d.rank <= 5 );
         vis.week_1_top_songs = vis.top_5_songs_in_country.filter(d => d.weekNum === getWeekNumber(vis.selectedDate)).map(d => d.track_name);
-        console.log(vis.selectedDate)
-        console.log(vis.top_5_songs_in_country);
-        console.log(vis.week_1_top_songs)
 
         vis.xScale.domain([1, 25]);
         vis.yScale.domain([1, 5]);

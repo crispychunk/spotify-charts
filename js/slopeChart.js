@@ -4,22 +4,23 @@ class SlopeChart {
      * Class constructor with initial configuration.
      * Slope chart should only take 2 countries AND cannot take itself twice.
      */
-    constructor(_config, _data) {
+    constructor(_config, _data, _dispatcher) {
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: 800,
             containerHeight: 750,
             margin: {
-                top: 30,
+                top: 100,
                 right: 100,
-                bottom: 20,
-                left: 30
+                bottom: 50,
+                left: 100
             }
         }
 
         this.data = _data
-        this.selectedCountry = [_config.defaultCountry, 'United States'];
+        this.selectedCountry = _config.defaultCountry ? [_config.defaultCountry] : [];
         this.selectedDate = _config.defaultDate;
+        this.dispatcher = _dispatcher;
         this.allGenre = ['pop', 'reggaeton', 'rock', 'latin', 'hip hop', 'rap', 'r&b', 'other']
         this.colorScale = _config.colorScale;
         this.initVis();
@@ -63,13 +64,13 @@ class SlopeChart {
         // Creating Legend
         const legend = vis.svg.append("g")
             .attr("class", "legend")
-            .attr("transform", `translate(${vis.config.width + 50},${vis.config.margin.top})`);
+            .attr("transform", `translate(${vis.config.width},0)`);
 
         const legendItems = legend.selectAll(".legend-item")
             .data(vis.allGenre)
             .enter().append("g")
             .attr("class", "legend-item")
-            .attr("transform", (d, i) => `translate(0,${i * 25})`);
+            .attr("transform", (d, i) => `translate(${Math.floor(i / 4) * 100},${(i % 4 * 20)})`);
 
         legendItems.append("rect")
             .attr("width", 15)
@@ -85,12 +86,16 @@ class SlopeChart {
     }
 
 
-    /* UpdateVis will group data by week and country, and generate node-link data. If only one country is selected then only nodes are created
-     *
+    /*
+     * UpdateVis will group data by week and country, and generate node-link data. If only one country is selected then only nodes are created
      */
     updateVis() {
         let vis = this;
 
+        //Default State
+        if (vis.selectedCountry.length <= 1 && !vis.selectedCountry.includes('Global')) {
+            vis.selectedCountry.push('Global')
+        }
         vis.filteredData = d3.group(vis.data, d => d.week, d => d.country);
         vis.filteredData = vis.searchAndJoinCountry();
 
@@ -122,7 +127,7 @@ class SlopeChart {
             .join(
                 enter => enter
                     .append("path")
-                    .attr("class", "slope-line")
+                    .attr("class", d => `slope-line slope-${vis.sanitizeSelector(d.track_name)}`)
                     .attr("fill", "none")
                     .attr("stroke", "currentColor")
                     .attr("stroke-width", d => vis.rankScale(vis.calculateStrength(d)))
@@ -131,10 +136,8 @@ class SlopeChart {
                             return "";
                         }
                         return line([d['country1'], d['country2']]);
-                    })
-                    .attr("stroke", d => vis.colorScale(vis.colorValue(d))),
+                    }),
                 update => update
-                    .attr("stroke", d => vis.colorScale(vis.colorValue(d)))
                     .attr("d", d => {
                         if (d['country2'] === undefined || d['country1'] === undefined) {
                             return "";
@@ -147,21 +150,54 @@ class SlopeChart {
         vis.chart.selectAll(".text-country1")
             .data(vis.filteredData.filter(d => d['country1'] !== undefined))
             .join("text")
-            .attr("class", "song-text text-country1")
+            .attr("class", d => `song-text  text-country1 slope-${vis.sanitizeSelector(d.track_name)}`)
             .attr("text-anchor", "end")
             .attr("x", d => vis.xScale(0))
             .attr("y", d => vis.yScale(d['country1']))
-            .text(d => d['track_name'] + ' ' + d['country1']);
+            .attr("fill", d => vis.colorScale(vis.colorValue(d)))
+            .text(d => d['track_name'] + ' ' + d['country1'])
+            .on('mouseenter', (event, d) => {
+                // Given all text element, highlight the elements
+                let elements = d3.selectAll(`.slope-${vis.sanitizeSelector(d.track_name)}`);
+                elements.classed('hover-slope', !elements.classed('hover-slope'));
+
+                vis.dispatcher.call('handleBiDirectionalInteraction', null, d.track_name);
+            })
+            .on('mouseleave', (event, d) => {
+                // Given all text element, highlight the elements
+                let elements = d3.selectAll(`.slope-${vis.sanitizeSelector(d.track_name)}`);
+                elements.classed('hover-slope', !elements.classed('hover-slope'));
+
+                vis.dispatcher.call('handleBiDirectionalInteraction', null, d.track_name);
+            }).on('click', (event, d) => {
+                //TODO interaction with linechart maybe?
+        })
+
 
         // Select all existing text for country2 and update them
         vis.chart.selectAll(".text-country2")
             .data(vis.filteredData.filter(d => d['country2'] !== undefined))
             .join("text")
-            .attr("class", "song-text text-country2")
+            .attr("class", d => `song-text text-country2 slope-${vis.sanitizeSelector(d.track_name)}`)
             .attr("text-anchor", "start")
             .attr("x", vis.xScale(1))
             .attr("y", d => vis.yScale(d['country2']))
-            .text(d => d['country2'] + ' ' + d['track_name']);
+            .attr("fill", d => vis.colorScale(vis.colorValue(d)))
+            .text(d => d['country2'] + ' ' + d['track_name'])
+            .on('mouseenter', (event, d) => {
+                // Given all text element, highlight the elements
+                let elements = d3.selectAll(`.slope-${vis.sanitizeSelector(d.track_name)}`);
+                elements.classed('hover-slope', !elements.classed('hover-slope'));
+
+                vis.dispatcher.call('handleBiDirectionalInteraction', null, d.track_name);
+            })
+            .on('mouseleave', (event, d) => {
+                // Given all text element, highlight the elements
+                let elements = d3.selectAll(`.slope-${vis.sanitizeSelector(d.track_name)}`);
+                elements.classed('hover-slope', !elements.classed('hover-slope'));
+
+                vis.dispatcher.call('handleBiDirectionalInteraction', null, d.track_name);
+            })
 
         vis.xAxisG
             .call(vis.xAxis)
@@ -190,10 +226,14 @@ class SlopeChart {
                 }
             })
         });
-        let newData = [...map.values()]
-        return newData;
+        return [...map.values()];
 
     }
 
+    // Given a track_name, create a className that removes spaces and replaces it with an underscore
+    sanitizeSelector(track_name) {
+        return track_name.replace(/[^a-zA-Z0-9-_]/g, '_');
+    }
 
 }
+
