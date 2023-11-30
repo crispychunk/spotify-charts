@@ -144,6 +144,7 @@ class SlopeChart {
                         }
                         return line([d['country1'], d['country2']]);
                     })
+                    .attr("stroke-width", d => vis.rankScale(vis.calculateStrength(d)))
             );
 
         // Select all existing text for country1 and update them

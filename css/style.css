@@ -61,3 +61,7 @@ body {
   stroke-width: 2.5px;
   stroke: yellow;
 }
+
+.title {
+  text-align: center;
+}

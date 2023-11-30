@@ -6,7 +6,7 @@ let loadedData = []
 
 let colorScale = d3
     .scaleOrdinal()
-    .range(d3.schemeAccent)
+    .range(d3.schemePaired)
     .domain(genres);
 
 // Define paths to your CSV and JSON files
