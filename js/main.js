@@ -86,7 +86,6 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
     // Dispatcher listeners
     dispatcher.on('changeWeek', week => {
         week = new Date(week).toISOString().split('T')[0];
-        console.log(week);
 
         // TODO Implement RadarChart week change interaction
         slopeChart.selectedDate = week;

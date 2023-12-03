@@ -7,8 +7,8 @@ class ChoroplethMap {
   constructor(_config, _data, _song_data, _dispatcher) {
     this.config = {
       parentElement: _config.parentElement,
-      containerWidth: _config.containerWidth || 1000,
-      containerHeight: _config.containerHeight || 750,
+      containerWidth: _config.containerWidth || 800,
+      containerHeight: _config.containerHeight || 500,
       tooltipPadding: 15,
       margin: _config.margin || { top: 0, right: 0, bottom: 0, left: 0 },
       projection: _config.projection || d3.geoMercator(),

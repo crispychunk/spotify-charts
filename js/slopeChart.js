@@ -8,7 +8,8 @@ class SlopeChart {
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: 800,
-            containerHeight: 750,
+            containerHeight: 500,
+            tooltipPadding: 200,
             margin: {
                 top: 100,
                 right: 100,
@@ -55,7 +56,7 @@ class SlopeChart {
             });
 
         vis.xAxisG = vis.chart.append('g')
-            .attr('class', 'axis x-axis')
+            .attr('class', 'axis x-axis slope-x-axis')
             .attr('transform', `translate(0, ${vis.config.height + vis.config.margin.bottom})`);
 
         vis.yAxisG = vis.chart.append('g')
@@ -161,18 +162,35 @@ class SlopeChart {
                 // Given all text element, highlight the elements
                 let elements = d3.selectAll(`.slope-${vis.sanitizeSelector(d.track_name)}`);
                 elements.classed('hover-slope', !elements.classed('hover-slope'));
-
                 vis.dispatcher.call('handleBiDirectionalInteraction', null, d.track_name);
+
+                // Visualize tooltip
+                d3.select('#slope-chart-tooltip')
+                    .style('display', 'block')
+                    .html(() => {
+                        let data = d['data_country1'];
+                        return (`
+                        <div class="tooltip-label">Artist: ${data.artist_names}</div>
+                        <div class="tooltip-label">Streams: ${data.streams}</div>
+                        <div class="tooltip-label">Release date: ${data.release_date}</div>
+                        `)
+                    });
             })
             .on('mouseleave', (event, d) => {
                 // Given all text element, highlight the elements
                 let elements = d3.selectAll(`.slope-${vis.sanitizeSelector(d.track_name)}`);
                 elements.classed('hover-slope', !elements.classed('hover-slope'));
-
                 vis.dispatcher.call('handleBiDirectionalInteraction', null, d.track_name);
-            }).on('click', (event, d) => {
-                //TODO interaction with linechart maybe?
-        })
+                // hide tooltip
+                d3.select('#slope-chart-tooltip').style('display', 'none');
+
+            })
+            .on('mousemove', (event) => {
+                // Move tooltip based on cursor position
+                d3.select('#slope-chart-tooltip')
+                    .style('left', (event.pageX - vis.config.tooltipPadding) + 'px')
+                    .style('top', (event.pageY) + 'px')
+            })
 
 
         // Select all existing text for country2 and update them
@@ -191,15 +209,34 @@ class SlopeChart {
                 elements.classed('hover-slope', !elements.classed('hover-slope'));
 
                 vis.dispatcher.call('handleBiDirectionalInteraction', null, d.track_name);
+
+                // Visualize tooltip
+                d3.select('#slope-chart-tooltip')
+                    .style('display', 'block')
+                    .html(() => {
+                        let data = d['data_country2'];
+                        return (`
+                        <div class="tooltip-label">Artist: ${data.artist_names}</div>
+                        <div class="tooltip-label">Streams: ${data.streams}</div>
+                        <div class="tooltip-label">Release date: ${data.release_date}</div>
+                        `)
+                    });
             })
             .on('mouseleave', (event, d) => {
                 // Given all text element, highlight the elements
                 let elements = d3.selectAll(`.slope-${vis.sanitizeSelector(d.track_name)}`);
                 elements.classed('hover-slope', !elements.classed('hover-slope'));
 
-                vis.dispatcher.call('handleBiDirectionalInteraction', null, d.track_name);
-            })
+                // hide tooltip
+                d3.select('#slope-chart-tooltip').style('display', 'none');
 
+                vis.dispatcher.call('handleBiDirectionalInteraction', null, d.track_name);
+            }).on('mousemove', (event) => {
+            // Move tooltip based on cursor position
+            d3.select('#slope-chart-tooltip')
+                .style('left', (event.pageX + 50) + 'px')
+                .style('top', (event.pageY) + 'px')
+        })
         vis.xAxisG
             .call(vis.xAxis)
             .call(g => g.select('.domain').remove());
@@ -218,12 +255,14 @@ class SlopeChart {
                     let object = {
                         track_name: song['track_name'],
                         [key]: song['rank'],
-                        artist_genre: song['artist_genre']
+                        artist_genre: song['artist_genre'],
+                        ['data_' + key]: song
                     };
                     map.set(song['track_name'], object);
                 } else {
                     let object = map.get(song['track_name']);
-                    map.set(song['track_name'], {...object, [key]: song['rank']});
+                    map.set(song['track_name'], {...object, [key]: song['rank'],['data_' + key]: song
+                    });
                 }
             })
         });
