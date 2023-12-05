@@ -41,7 +41,7 @@ class SlopeChart {
         vis.chart = vis.svg.append('g')
             .attr('transform', `translate(${vis.config.margin.left},${vis.config.margin.top})`);
 
-        vis.rankScale = d3.scaleLinear().range([1, 9]);
+        vis.rankScale = d3.scaleLinear().range([1, 6]);
         vis.xScale = d3.scalePoint().range([0, vis.config.width]).padding(1.2);
         vis.yScale = d3.scaleLinear().range([0, vis.config.height]);
 
