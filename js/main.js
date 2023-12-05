@@ -103,7 +103,11 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
     // When the map selects the countries,
     dispatcher.on('changeCountry', selectedCountries => {
         slopeChart.selectedCountry = selectedCountries;
+        lineChart.selectedCountries = selectedCountries;
+        lineChart.displayedCountry = selectedCountries[0];
+
         slopeChart.updateVis();
+        lineChart.updateVis();
     });
 
     dispatcher.on('handleBiDirectionalInteraction', selectedSong => {
@@ -115,7 +119,7 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
 });
 
 
-// helper function that returns the week number given a date string from 2022
+// helper function that returns the week number given a date string from 2022 in the format 2022-MM-DD
 function getWeekNumber(dateString) {
     monthToDaysMap = {
         '01': 0,
