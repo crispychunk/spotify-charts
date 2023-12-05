@@ -37,7 +37,7 @@ body {
   text-align: center;
 }
 
-#choropleth-map-tooltip {
+#choropleth-map-tooltip, #slope-chart-tooltip {
   position: absolute;
   display: none;
   font-size: 12px;
@@ -64,4 +64,12 @@ body {
 
 .title {
   text-align: center;
+}
+
+.tooltip-label {
+  text-align: left;
+}
+
+.slope-x-axis {
+  font-size: 20px;
 }
