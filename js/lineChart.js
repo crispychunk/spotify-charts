@@ -17,7 +17,8 @@ class LineChart {
         };
         this.data = _data;
         this.selectedDate = _config.defaultDate;
-        this.selectedCountry = _config.defaultCountry;
+        this.displayedCountry = _config.defaultCountry ? _config.defaultCountry : 'Global';
+        this.selectedCountries = [this.displayedCountry]
 
         this.initVis();
     }
@@ -37,7 +38,7 @@ class LineChart {
 
         vis.xScale = d3.scaleLinear().range([0, vis.width]);
         vis.yScale = d3.scaleLinear().range([0, vis.height]);
-        vis.colourScale = d3.scaleOrdinal(["#e41a1c", "#0000FF", "#ffaa00", "#33ffff", "#f781bf"]);
+        vis.colourScale = d3.scaleOrdinal(["#0000FF", "#785EF0", "#DC267F", "#FE6100", "#FFB000"]);
 
 
         vis.xAxis = d3.axisBottom(vis.xScale)
@@ -75,12 +76,15 @@ class LineChart {
 
     updateVis() {
         let vis = this;
-        vis.top_5_songs_in_country = this.data.filter(d => d.country === vis.selectedCountry && d.rank <= 5 );
-        vis.week_1_top_songs = vis.top_5_songs_in_country.filter(d => d.weekNum === getWeekNumber(vis.selectedDate)).map(d => d.track_name);
+
+        vis.top_5_songs_all_weeks = this.data.filter(d => d.country === vis.displayedCountry && d.rank <= 5 );
+        let top_5_songs_selected_week = vis.top_5_songs_all_weeks.filter(d => d.weekNum === getWeekNumber(vis.selectedDate));
+        vis.top_5_song_names = top_5_songs_selected_week.sort((a, b) => a.rank - b.rank).map(d => d.track_name);
+   
 
         vis.xScale.domain([1, 25]);
         vis.yScale.domain([1, 5]);
-        vis.colourScale.domain(vis.week_1_top_songs);
+        vis.colourScale.domain(vis.top_5_song_names);
 
         vis.renderVis();
     }
@@ -94,13 +98,13 @@ class LineChart {
         // Create a new legend
         const legend = vis.svg.append("g")
             .attr("class", "legend")
-            .attr("transform", `translate(${50},${vis.height + 100})`);
+            .attr("transform", `translate(${50},${vis.height + 80})`);
 
         const legendItems = legend.selectAll(".legend-item")
-            .data(vis.week_1_top_songs)
+            .data(vis.top_5_song_names)
             .enter().append("g")
             .attr("class", "legend-item")
-            .attr("transform", (d, i) => `translate(${i * 200},0)`);
+            .attr("transform", (d, i) => `translate(0, ${i * 20})`);
 
         legendItems.append("circle")
             .attr("r", 6)
@@ -108,15 +112,33 @@ class LineChart {
 
         legendItems.append("text")
             .attr("x", 20)
-            .attr("y", 12)
+            .attr("y", 0)
             .attr("font-size", 12)
             .text(d => d);
+        
+        // remove existing dropdown options
+        d3.select("#selectButton").selectAll("option").remove();
+        const selectButton = d3.select("#selectButton")
+            .selectAll("myOptions")
+                .data(vis.selectedCountries)
+            .enter()
+                .append('option')
+            .text(d => d)
+            .attr("value", d => d)
+            .property("selected", d => d === vis.displayedCountry)
+
+        d3.select("#selectButton").on("change", function(d) {
+            let selectedOption = d3.select(this).property("value")
+            console.log(selectedOption)
+            vis.displayedCountry = selectedOption;
+            vis.updateVis();
+        })
 
         // Remove existing circles and paths
         vis.chart.selectAll("circle").remove();
         vis.chart.selectAll(".line").remove();
 
-        let selected_songs = vis.top_5_songs_in_country.filter(d => vis.week_1_top_songs.includes(d.track_name));
+        let selected_songs = vis.top_5_songs_all_weeks.filter(d => vis.top_5_song_names.includes(d.track_name));
         let groupedByTrack = d3.group(selected_songs, d => d.track_name);
 
         selected_songs.forEach(d => {
