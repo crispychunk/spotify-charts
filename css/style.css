@@ -74,6 +74,26 @@ body {
   font-size: 20px;
 }
 
+/* Hide the default check mark */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: none; /* Remove default focus outline in some browsers */
+  cursor: pointer; /* Add a pointer cursor on hover */
+}
+
+/* Style for the box of the checkbox */
+input[type="checkbox"]::before {
+  content: ''; /* Empty content */
+  display: inline-block;
+  width: 16px; /* Set the width of the box */
+  height: 16px; /* Set the height of the box */
+  border: 13px solid #fff; /* Set the border color to white */
+  margin-right: 5px; /* Adjust spacing between the box and label if needed */
+  vertical-align: text-bottom; /* Align with the text baseline */
+}
+
 #select-button {
   display: flex;
   position: relative;
