@@ -73,21 +73,3 @@ body {
 .slope-x-axis {
   font-size: 20px;
 }
-
-#select-button {
-  display: flex;
-  position: relative;
-  left: 800px;
-  top: -60px;
-  background-color: #1DB954;
-  border: none;
-  color: white;
-  padding: 5px 32px;
-  text-align: center;
-  text-decoration: none;
-  font-size: 12px;
-  border-radius: 12px;
-  width: 200px;
-  transition-duration: 0.4s;
-  cursor: pointer;
-}
