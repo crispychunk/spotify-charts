@@ -80,7 +80,7 @@ class LineChart {
         vis.top_5_songs_all_weeks = this.data.filter(d => d.country === vis.displayedCountry && d.rank <= 5 );
         let top_5_songs_selected_week = vis.top_5_songs_all_weeks.filter(d => d.weekNum === getWeekNumber(vis.selectedDate));
         vis.top_5_song_names = top_5_songs_selected_week.sort((a, b) => a.rank - b.rank).map(d => d.track_name);
-   
+
 
         vis.xScale.domain([1, 25]);
         vis.yScale.domain([1, 5]);
@@ -115,19 +115,19 @@ class LineChart {
             .attr("y", 0)
             .attr("font-size", 12)
             .text(d => d);
-        
+
         // remove existing dropdown options
-        d3.select("#selectButton").selectAll("option").remove();
-        const selectButton = d3.select("#selectButton")
+        d3.select("#select-button").selectAll("option").remove();
+        const selectButton = d3.select("#select-button")
             .selectAll("myOptions")
-                .data(vis.selectedCountries)
+            .data(vis.selectedCountries)
             .enter()
-                .append('option')
+            .append('option')
             .text(d => d)
             .attr("value", d => d)
             .property("selected", d => d === vis.displayedCountry)
 
-        d3.select("#selectButton").on("change", function(d) {
+        d3.select("#select-button").on("change", function(d) {
             let selectedOption = d3.select(this).property("value")
             console.log(selectedOption)
             vis.displayedCountry = selectedOption;
