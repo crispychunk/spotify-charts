@@ -1,8 +1,8 @@
 let choroplethMap;
 let lineChart;
-let features = ["Acousticness", "Danceability", "Instrumentalness", "Liveness", "Energy", "Valence", "Speechiness"];
+let radarChart;
 let genres = ['pop', 'reggaeton', 'rock', 'latin', 'hip hop', 'rap', 'r&b', 'other'];
-let loadedData = []
+
 
 let colorScale = d3
     .scaleOrdinal()
@@ -22,21 +22,9 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
         d.rank = +d.rank;
     })
 
-    // Assuming you want to use certain columns for rada chart features
-    loadedData = csvData.slice(0, 5).map(d => ({
-        Acousticness: +d.acousticness,
-        Danceability: +d.danceability,
-        Instrumentalness: +d.instrumentalness,
-        Liveness: +d.liveness,
-        Energy: +d.energy,
-        Valence: +d.valence,
-        Speechiness: +d.speechiness,
-        Genre: d.artist_genre
-    }));
-
     // Default values and dispatcher
     const defaultCountry = null;
-    const defaultDate = "2022-01-06";
+    const defaultDate = "2022-06-16";
     const dispatcher = d3.dispatch('changeWeek', 'changeCountry', 'handleBiDirectionalInteraction')
 
 
@@ -78,8 +66,13 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
     choroplethMap.updateVis();
 
 
-    const radarchart = new RadarChart({parentElement: "#spider-chart", colorScale: colorScale}, loadedData);
-    radarchart.updateVis();
+    radarChart = new RadarChart({
+        parentElement: "#spider-chart",
+        colorScale: colorScale,
+        defaultCountry: defaultCountry,
+        dispatcher: dispatcher
+    }, csvData);
+    radarChart.updateVis();
 
 
 
@@ -87,26 +80,25 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
     dispatcher.on('changeWeek', week => {
         week = new Date(week).toISOString().split('T')[0];
 
-        // TODO Implement RadarChart week change interaction
+
         slopeChart.selectedDate = week;
         lineChart.selectedDate = week;
         choroplethMap.config.default_date = week;
-        // radarchart.config.defaultDate = week;
+
 
         choroplethMap.updateVis();
         slopeChart.updateVis();
         lineChart.updateVis();
-        // radarchart.updateVis();
+
     });
 
     // When the map selects the countries,
     dispatcher.on('changeCountry', selectedCountries => {
         slopeChart.selectedCountry = selectedCountries;
-        lineChart.selectedCountries = selectedCountries;
-        lineChart.displayedCountry = selectedCountries[0];
-
+        radarChart.selectedCountry = selectedCountries;
         slopeChart.updateVis();
-        lineChart.updateVis();
+        radarChart.updateVis();
+
     });
 
     dispatcher.on('handleBiDirectionalInteraction', selectedSong => {
@@ -118,7 +110,7 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
 });
 
 
-// helper function that returns the week number given a date string from 2022 in the format 2022-MM-DD
+// helper function that returns the week number given a date string from 2022
 function getWeekNumber(dateString) {
     monthToDaysMap = {
         '01': 0,
