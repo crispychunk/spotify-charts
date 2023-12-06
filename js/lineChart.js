@@ -117,8 +117,8 @@ class LineChart {
             .text(d => d);
         
         // remove existing dropdown options
-        d3.select("#selectButton").selectAll("option").remove();
-        const selectButton = d3.select("#selectButton")
+        d3.select("#select-button").selectAll("option").remove();
+        const selectButton = d3.select("#select-button")
             .selectAll("myOptions")
                 .data(vis.selectedCountries)
             .enter()
@@ -127,7 +127,7 @@ class LineChart {
             .attr("value", d => d)
             .property("selected", d => d === vis.displayedCountry)
 
-        d3.select("#selectButton").on("change", function(d) {
+        d3.select("#select-button").on("change", function(d) {
             let selectedOption = d3.select(this).property("value")
             console.log(selectedOption)
             vis.displayedCountry = selectedOption;
