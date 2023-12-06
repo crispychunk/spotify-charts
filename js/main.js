@@ -36,7 +36,7 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
 
     // Default values and dispatcher
     const defaultCountry = null;
-    const defaultDate = "2022-06-16";
+    const defaultDate = "2022-01-06";
     const dispatcher = d3.dispatch('changeWeek', 'changeCountry', 'handleBiDirectionalInteraction')
 
 
