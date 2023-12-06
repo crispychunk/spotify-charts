@@ -24,7 +24,7 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
 
     // Default values and dispatcher
     const defaultCountry = null;
-    const defaultDate = "2022-06-16";
+    const defaultDate = "2022-01-06";
     const dispatcher = d3.dispatch('changeWeek', 'changeCountry', 'handleBiDirectionalInteraction')
 
 
@@ -96,9 +96,12 @@ Promise.all([d3.csv(csvPath), d3.json(jsonPath)]).then(([csvData, jsonData]) => 
     dispatcher.on('changeCountry', selectedCountries => {
         slopeChart.selectedCountry = selectedCountries;
         radarChart.selectedCountry = selectedCountries;
+        lineChart.selectedCountries = selectedCountries;
+        lineChart.displayedCountry = selectedCountries[0];  
+
         slopeChart.updateVis();
         radarChart.updateVis();
-
+        lineChart.updateVis();
     });
 
     dispatcher.on('handleBiDirectionalInteraction', selectedSong => {

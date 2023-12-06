@@ -3,8 +3,8 @@ class RadarChart {
         // Configuration settings for the radar chart
         this.config = {
             parentElement: _config.parentElement,
-            containerWidth: _config.containerWidth || 700,
-            containerHeight: _config.containerHeight || 650,
+            containerWidth: _config.containerWidth || 525,
+            containerHeight: _config.containerHeight || 425,
             margin: _config.margin || {
                 top: 10,
                 right: 50,
@@ -16,7 +16,7 @@ class RadarChart {
         // Define radialScale as a class property
         this.radialScale = d3.scaleLinear()
             .domain([0, 1])
-            .range([0, 250]);
+            .range([0, 170]);
 
         // Properties to be displayed on the radar chart
         this.properties = ["Acousticness", "Danceability", "Instrumentalness", "Liveness", "Energy", "Valence", "Speechiness"];

@@ -7,7 +7,7 @@ class SlopeChart {
     constructor(_config, _data, _dispatcher) {
         this.config = {
             parentElement: _config.parentElement,
-            containerWidth: 800,
+            containerWidth: 825,
             containerHeight: 500,
             tooltipPadding: 200,
             margin: {
